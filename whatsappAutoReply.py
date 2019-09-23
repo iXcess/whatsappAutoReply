@@ -1,6 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from threading import Timer
+import msvcrt
 import sys
 import os
 import time
@@ -37,10 +37,7 @@ def main():
                 else :
                     print('Message ' + str(i) + ' is ignored')
 
-            t = Timer(refreshTime, print, ['Sorry, times up'])
-            t.start()
-            isPaused = input("Enter 'Pause' to pause the program: ")
-            t.cancel()
+            isPaused = readInput('Enter \'Pause\' to pause the program:', refreshTime)
 
             if(isPaused == "Pause"):
                 goToPause()
@@ -49,7 +46,7 @@ def main():
             # Need to reload to update the HTML body
             driver.get("https://web.whatsapp.com/")
         except:
-            print('Something went wrong, retrying in ' + refreshTime + ' seconds')
+            print('Something went wrong, retrying in ' + str(refreshTime) + ' seconds')
 
         time.sleep(refreshTime)
 
@@ -82,6 +79,28 @@ def goToPause():
             return
         else:
             continue
+def readInput( caption, default, timeout = 5):
+
+    start_time = time.time()
+    sys.stdout.write('%s(%s):'%(caption, default))
+    sys.stdout.flush()
+    input = ''
+    while True:
+        if msvcrt.kbhit():
+            byte_arr = msvcrt.getche()
+            if ord(byte_arr) == 13: # enter_key
+                break
+            elif ord(byte_arr) >= 32: #space_char
+                input += "".join(map(chr,byte_arr))
+        if len(input) == 0 and (time.time() - start_time) > timeout:
+            print("timing out, using default value.")
+            break
+
+    print('')  # needed to move to next line
+    if len(input) > 0:
+        return input
+    else:
+        return default
 
 if __name__ == '__main__':
     main()
